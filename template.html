@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F5F1E6;
+    --paper-raised: #FBF8F1;
+    --ink: #1C1A16;
+    --ink-soft: #4A453B;
+    --muted: #8A8270;
+    --line: #DDD5C0;
+    --line-strong: #C7BCA0;
+    --red: #A5382B;
+    --red-soft: #F3E2DD;
+    --teal: #2F6B5E;
+    --teal-soft: #E1EBE7;
+    --navy: #2C3B57;
+    --navy-soft: #E2E5EC;
+    --forest: #3E5C3A;
+    --forest-soft: #E5EAE1;
+    --mustard: #A87A20;
+    --mustard-soft: #F1E8D4;
+    --plum: #6B4A6B;
+    --plum-soft: #ECE3EC;
+    --brick: #8A4B32;
+    --brick-soft: #EFE1D9;
+    --font-serif: 'Noto Serif KR', Georgia, serif;
+    --font-sans: 'Noto Sans KR', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 28px 80px;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    padding-bottom: 18px;
+    border-bottom: 3px solid var(--ink);
+    flex-wrap: wrap;
+  }
+
+  .masthead h1 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 40px;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .echo-mark {
+    margin-right: 10px;
+  }
+
+  .masthead .sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+
+  .masthead-meta {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+
+  .masthead-meta .edition {
+    color: var(--red);
+    font-weight: 600;
+  }
+
+  .weekly-popular {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    background: var(--paper-raised);
+    text-align: left;
+    min-width: 230px;
+    max-width: 280px;
+  }
+  .wp-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+    font-family: var(--font-sans);
+  }
+  .wp-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 11.5px;
+    padding: 4px 0;
+    border-top: 1px solid var(--line);
+  }
+  .wp-row:first-child { border-top: none; }
+  .wp-rank {
+    font-family: var(--font-mono);
+    color: var(--muted);
+    width: 12px;
+    flex-shrink: 0;
+  }
+  .wp-title {
+    flex: 1;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wp-views {
+    font-family: var(--font-mono);
+    color: var(--muted);
+    font-size: 10.5px;
+    flex-shrink: 0;
+  }
+  .wp-hint {
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 0;
+    margin-top: 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .stat {
+    flex: 1;
+    padding: 16px 4px;
+    border-right: 1px solid var(--line);
+    text-align: center;
+  }
+  .stat:last-child { border-right: none; }
+
+  .stat .num {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 700;
+  }
+  .stat .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ---------- Category quick nav ---------- */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+    margin: 22px 0 8px;
+  }
+
+  .category-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .cat-chip {
+    text-align: left;
+    border: 1px solid var(--line-strong);
+    border-left: 3px solid var(--chip-fg, var(--line-strong));
+    background: var(--paper-raised);
+    border-radius: 3px;
+    padding: 10px 30px 10px 12px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    position: relative;
+    transition: box-shadow 0.12s ease;
+  }
+  .cat-chip:hover { box-shadow: 0 1px 5px rgba(0,0,0,0.08); }
+  .cat-chip.active {
+    background: var(--chip-bg, var(--paper-raised));
+    border-left-width: 4px;
+  }
+  .cat-emoji { font-size: 15px; margin-right: 5px; }
+  .cat-name { font-weight: 700; font-size: 13px; color: var(--ink); }
+  .cat-desc {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .cat-count {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ---------- Filter bar ---------- */
+  .filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 22px 0 4px;
+  }
+
+  .search-box {
+    flex: 1 1 220px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 32px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    border-radius: 3px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .search-box input:focus { outline: 2px solid var(--navy); outline-offset: -1px; }
+  .search-box::before {
+    content: "⌕";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  select {
+    padding: 9px 10px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    border-radius: 3px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  select:focus { outline: 2px solid var(--navy); outline-offset: -1px; }
+
+  .toggle-chip {
+    padding: 9px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    background: var(--paper-raised);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    user-select: none;
+  }
+  .toggle-chip.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .refresh-btn {
+    padding: 9px 14px;
+    border: 1px solid var(--ink);
+    border-radius: 3px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+  }
+  .refresh-btn:hover { background: var(--ink-soft); }
+  .refresh-btn:disabled { opacity: 0.5; cursor: default; }
+
+  /* ---------- Table ---------- */
+  .table-scroll {
+    margin-top: 18px;
+    overflow-x: auto;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+  }
+
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--ink); }
+  thead th .arrow { font-size: 9px; margin-left: 3px; opacity: 0.6; }
+
+  tbody tr.row {
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  tbody tr.row:hover { background: var(--paper-raised); }
+  tbody tr.row.expanded { background: var(--paper-raised); }
+
+  tbody td {
+    padding: 12px 10px;
+    font-size: 13px;
+    vertical-align: top;
+  }
+
+  .col-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .stars {
+    color: var(--red);
+    letter-spacing: 1px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .col-title {
+    max-width: 320px;
+  }
+  .col-title .headline {
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .col-title .subtag {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .col-summary {
+    max-width: 280px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    font-size: 12.5px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .status-must { background: var(--red); color: #fff; }
+  .status-worth { background: var(--paper); border: 1px solid var(--line-strong); color: var(--ink-soft); }
+  .status-archive { background: transparent; border: 1px dashed var(--line-strong); color: var(--muted); }
+  .status-default { background: var(--paper); border: 1px solid var(--line-strong); color: var(--ink-soft); }
+
+  tbody tr.row.is-archived { opacity: 0.5; }
+  tbody tr.row.is-archived:hover { opacity: 0.75; }
+
+  .col-source {
+    font-size: 12px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .col-region {
+    font-size: 10.5px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+  }
+
+  .col-views {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .hot-badge {
+    font-size: 11px;
+  }
+
+  .detail-row td {
+    padding: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .detail-panel {
+    background: var(--paper-raised);
+    padding: 18px 22px;
+    border-left: 3px solid var(--red);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 32px;
+  }
+  .detail-block .h {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .detail-block .v {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .detail-full {
+    grid-column: 1 / -1;
+  }
+  .detail-link {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 7px 14px;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
+    font-size: 12px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .detail-link:hover { background: var(--ink-soft); }
+
+  /* ---------- States ---------- */
+  .state-box {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .state-box .big {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .state-box code {
+    background: var(--paper-raised);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  .spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid var(--line-strong);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-hint { margin-top: 4px; font-size: 12.5px; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 20px 14px 60px; }
+    .masthead h1 { font-size: 28px; }
+    .masthead-meta { text-align: left; }
+    .stats-row { flex-wrap: wrap; }
+    .stat { flex: 1 1 50%; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1><span class="echo-mark">ECHO</span>Knowledge Hub</h1>
+      <div class="sub">외부 아티클 아카이브 · 에코마케팅 큐레이션</div>
+    </div>
+    <div class="masthead-meta" id="masthead-meta">
+      <div class="edition">SYNCED SNAPSHOT</div>
+      <div id="last-updated">불러오는 중…</div>
+      <div class="weekly-popular" id="weekly-popular">
+        <div class="wp-label">🔥 주간 인기 아티클</div>
+        <div id="weekly-popular-list"></div>
+        <div class="wp-hint">조회수가 쌓이면 자동으로 갱신돼요</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row" id="stats-row" style="display:none;">
+    <div class="stat"><div class="num" id="stat-total">–</div><div class="lbl">전체 아티클</div></div>
+    <div class="stat"><div class="num" id="stat-mustread">–</div><div class="lbl">Must Read</div></div>
+    <div class="stat"><div class="num" id="stat-categories">–</div><div class="lbl">카테고리</div></div>
+    <div class="stat"><div class="num" id="stat-latest">–</div><div class="lbl">최신 등록일</div></div>
+  </div>
+
+  <div class="section-label" id="category-nav-label" style="display:none;">카테고리 바로가기</div>
+  <div class="category-nav" id="category-nav"></div>
+
+  <div class="filters" id="filters" style="display:none;">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="제목, 요약, 태그 검색">
+    </div>
+    <select id="filter-category"><option value="">전체 카테고리</option></select>
+    <select id="filter-importance"><option value="">전체 중요도</option></select>
+    <select id="filter-status">
+      <option value="">전체 상태</option>
+      <option value="Must Read">Must Read</option>
+      <option value="읽어볼 만함">읽어볼 만함</option>
+      <option value="아카이브">아카이브</option>
+    </select>
+    <div class="toggle-chip" id="mustread-toggle">🔥 Must Read만</div>
+    <button class="refresh-btn" id="refresh-btn">필터 초기화</button>
+  </div>
+
+  <div id="content-area"></div>
+
+</div>
+
+<script>
+const LAST_SYNCED = '__LAST_SYNCED__';
+
+const ARTICLES = __ARTICLES_JSON__;
+
+const CATEGORY_COLORS = {
+  'AI·테크':      { bg: 'var(--teal-soft)',  fg: 'var(--teal)'   },
+  '브랜드·커머스': { bg: 'var(--plum-soft)',  fg: 'var(--plum)'   },
+  '플랫폼·미디어': { bg: 'var(--navy-soft)',  fg: 'var(--navy)'   },
+  '에이전시·경쟁사': { bg: 'var(--forest-soft)', fg: 'var(--forest)' },
+  '광고·마케팅':  { bg: 'var(--mustard-soft)', fg: 'var(--mustard)' },
+  '글로벌 사례':  { bg: 'var(--brick-soft)',  fg: 'var(--brick)'  },
+};
+function categoryStyle(cat) {
+  return CATEGORY_COLORS[cat] || { bg: 'var(--line)', fg: 'var(--ink-soft)' };
+}
+
+const CATEGORY_META = {
+  'AI·테크':        { emoji: '🤖', desc: 'AI / Agent / MarTech / AdTech' },
+  '광고·마케팅':    { emoji: '📣', desc: '시장·캠페인·측정' },
+  '플랫폼·미디어':  { emoji: '📱', desc: 'Google / Meta / TikTok / 국내 플랫폼' },
+  '브랜드·커머스':  { emoji: '🛍', desc: 'D2C / CRM / Commerce' },
+  '에이전시·경쟁사': { emoji: '🏢', desc: '국내외 에이전시 / BM' },
+  '글로벌 사례':    { emoji: '🌎', desc: '해외 벤치마크' },
+};
+
+function renderCategoryNav() {
+  const nav = document.getElementById('category-nav');
+  const label = document.getElementById('category-nav-label');
+  const current = document.getElementById('filter-category').value;
+  const cats = Object.keys(CATEGORY_META);
+
+  label.style.display = 'block';
+  nav.innerHTML = cats.map(cat => {
+    const meta = CATEGORY_META[cat];
+    const cs = categoryStyle(cat);
+    const count = allRows.filter(r => r.category === cat).length;
+    const active = current === cat;
+    return `<button class="cat-chip ${active ? 'active' : ''}" data-cat="${escapeHtml(cat)}" style="--chip-fg:${cs.fg};--chip-bg:${cs.bg}">
+      <span class="cat-emoji">${meta.emoji}</span><span class="cat-name">${escapeHtml(cat)}</span>
+      <span class="cat-count">${count}건</span>
+      <span class="cat-desc">${escapeHtml(meta.desc)}</span>
+    </button>`;
+  }).join('');
+
+  nav.querySelectorAll('.cat-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.cat;
+      const sel = document.getElementById('filter-category');
+      sel.value = (sel.value === cat) ? '' : cat;
+      expandedIndex = null;
+      renderCategoryNav();
+      render();
+    });
+  });
+}
+
+let allRows = [];
+let sortState = { col: 'date', dir: 'desc' };
+let expandedIndex = null;
+let viewCounts = {};
+
+const COUNTAPI_BASE = 'https://countapi.mileshilliard.com/api/v1';
+const COUNTAPI_PREFIX = 'echomkt-knowledgehub-';
+
+function hashId(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
+  return 'a' + Math.abs(h).toString(36);
+}
+
+async function loadViewCounts() {
+  const results = await Promise.all(ARTICLES.map(async (r) => {
+    const id = hashId(r.title);
+    try {
+      const res = await fetch(`${COUNTAPI_BASE}/get/${COUNTAPI_PREFIX}${id}`);
+      if (!res.ok) return [id, 0];
+      const data = await res.json();
+      return [id, parseInt(data.value, 10) || 0];
+    } catch (e) {
+      return [id, 0];
+    }
+  }));
+  viewCounts = Object.fromEntries(results);
+}
+
+async function recordView(articleId) {
+  try {
+    const res = await fetch(`${COUNTAPI_BASE}/hit/${COUNTAPI_PREFIX}${articleId}`);
+    if (res.ok) {
+      const data = await res.json();
+      viewCounts[articleId] = parseInt(data.value, 10) || 0;
+    }
+  } catch (e) {
+    console.error('조회수 기록 실패', e);
+  }
+  render();
+}
+
+function populateFilterOptions(rows) {
+  const catSel = document.getElementById('filter-category');
+  const impSel = document.getElementById('filter-importance');
+
+  const cats = [...new Set(rows.map(r => r.category).filter(Boolean))].sort();
+  const imps = [...new Set(rows.map(r => r.importance).filter(Boolean))].sort((a,b) => b.length - a.length);
+
+  catSel.innerHTML = '<option value="">전체 카테고리</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  impSel.innerHTML = '<option value="">전체 중요도</option>' + imps.map(i => `<option value="${escapeHtml(i)}">${escapeHtml(i)} (${i.length})</option>`).join('');
+}
+
+function updateStats(rows) {
+  document.getElementById('stat-total').textContent = rows.length;
+  document.getElementById('stat-mustread').textContent = rows.filter(r => r.status.includes('Must')).length;
+  document.getElementById('stat-categories').textContent = new Set(rows.map(r => r.category).filter(Boolean)).size;
+  const dates = rows.map(r => r.date).filter(Boolean).sort();
+  document.getElementById('stat-latest').textContent = dates.length ? dates[dates.length - 1] : '–';
+  document.getElementById('stats-row').style.display = 'flex';
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function getFiltered() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const cat = document.getElementById('filter-category').value;
+  const imp = document.getElementById('filter-importance').value;
+  const stat = document.getElementById('filter-status').value;
+  const mustOnly = document.getElementById('mustread-toggle').classList.contains('active');
+
+  let rows = allRows.filter(r => {
+    if (cat && r.category !== cat) return false;
+    if (imp && r.importance !== imp) return false;
+    if (stat && r.status !== stat) return false;
+    if (mustOnly && !r.status.includes('Must')) return false;
+    if (q) {
+      const hay = (r.title + ' ' + r.summary + ' ' + r.tag + ' ' + r.source).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  rows.sort((a, b) => {
+    let av, bv;
+    if (sortState.col === 'date') { av = a.date; bv = b.date; }
+    else if (sortState.col === 'importance') { av = a.importance.length; bv = b.importance.length; }
+    else if (sortState.col === 'views') { av = viewCounts[hashId(a.title)] || 0; bv = viewCounts[hashId(b.title)] || 0; }
+    else { av = a[sortState.col] || ''; bv = b[sortState.col] || ''; }
+    if (av < bv) return sortState.dir === 'asc' ? -1 : 1;
+    if (av > bv) return sortState.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  return rows;
+}
+
+function statusClass(status) {
+  if (status.includes('Must')) return 'status-must';
+  if (status.includes('아카이브')) return 'status-archive';
+  if (status.includes('읽어')) return 'status-worth';
+  return 'status-default';
+}
+
+function renderWeeklyPopular() {
+  const list = document.getElementById('weekly-popular-list');
+  if (!list) return;
+  const ranked = allRows
+    .map(r => ({ title: r.title, views: viewCounts[hashId(r.title)] || 0 }))
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 3);
+
+  if (ranked.length === 0 || ranked.every(r => r.views === 0)) {
+    list.innerHTML = `<div class="wp-empty">아직 조회 데이터가 없어요</div>`;
+    return;
+  }
+
+  list.innerHTML = ranked.map((r, i) => `<div class="wp-row">
+    <span class="wp-rank">${i + 1}</span>
+    <span class="wp-title">${escapeHtml(r.title)}</span>
+    <span class="wp-views">${r.views}회</span>
+  </div>`).join('');
+}
+
+function render() {
+  renderWeeklyPopular();
+  const rows = getFiltered();
+  const area = document.getElementById('content-area');
+
+  if (allRows.length === 0) {
+    area.innerHTML = `<div class="state-box">
+      <div class="big">아직 등록된 아티클이 없습니다</div>
+      <div class="empty-hint">시트의 '아티클 DB' 탭에 새 행을 추가하면 여기에 바로 나타나요.</div>
+    </div>`;
+    return;
+  }
+
+  if (rows.length === 0) {
+    area.innerHTML = `<div class="state-box">
+      <div class="big">조건에 맞는 아티클이 없습니다</div>
+      <div class="empty-hint">필터나 검색어를 조정해보세요.</div>
+    </div>`;
+    return;
+  }
+
+  const arrow = (col) => sortState.col === col ? `<span class="arrow">${sortState.dir === 'asc' ? '▲' : '▼'}</span>` : '';
+
+  let html = `<div class="table-scroll"><table>
+    <thead><tr>
+      <th data-sort="date">등록일 ${arrow('date')}</th>
+      <th data-sort="importance">중요도 ${arrow('importance')}</th>
+      <th data-sort="category">카테고리 ${arrow('category')}</th>
+      <th data-sort="source">출처</th>
+      <th>제목</th>
+      <th>핵심 요약</th>
+      <th data-sort="views">조회수 ${arrow('views')}</th>
+      <th data-sort="status">상태 ${arrow('status')}</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach((r, i) => {
+    const cs = categoryStyle(r.category);
+    const isOpen = expandedIndex === i;
+    const articleId = hashId(r.title);
+    const views = viewCounts[articleId] || 0;
+    const isHot = views >= 3;
+    html += `<tr class="row ${isOpen ? 'expanded' : ''} ${r.status.includes('아카이브') ? 'is-archived' : ''}" data-idx="${i}" data-article-id="${articleId}">
+      <td class="col-date">${escapeHtml(r.date)}</td>
+      <td><span class="stars">${escapeHtml(r.importance)}</span></td>
+      <td><span class="tag" style="background:${cs.bg};color:${cs.fg}">${escapeHtml(r.category)}</span></td>
+      <td class="col-source">${escapeHtml(r.source)}<span class="col-region">${escapeHtml(r.region)}</span></td>
+      <td class="col-title"><div class="headline">${escapeHtml(r.title)}</div><div class="subtag">${escapeHtml(r.tag)}</div></td>
+      <td class="col-summary">${escapeHtml(r.summary)}</td>
+      <td class="col-views">${views}${isHot ? ' <span class="hot-badge">🔥</span>' : ''}</td>
+      <td><span class="status-badge ${statusClass(r.status)}">${escapeHtml(r.status)}</span></td>
+    </tr>`;
+
+    if (isOpen) {
+      html += `<tr class="detail-row"><td colspan="8"><div class="detail-panel">
+        <div class="detail-block"><div class="h">WHY IT MATTERS / 에코 시사점</div><div class="v">${escapeHtml(r.why) || '—'}</div></div>
+        <div class="detail-block"><div class="h">추천 대상 · 열람 구분</div><div class="v">${escapeHtml(r.audience) || '—'} · ${escapeHtml(r.access) || '—'}</div></div>
+        <div class="detail-block detail-full">
+          ${r.link ? `<a class="detail-link" href="${escapeHtml(r.link)}" target="_blank" rel="noopener">원문 보기 ↗</a>` : ''}
+        </div>
+      </div></td></tr>`;
+    }
+  });
+
+  html += `</tbody></table></div>`;
+  area.innerHTML = html;
+
+  area.querySelectorAll('tr.row').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const idx = Number(tr.dataset.idx);
+      const articleId = tr.dataset.articleId;
+      const opening = expandedIndex !== idx;
+      expandedIndex = opening ? idx : null;
+      render();
+      if (opening && articleId) recordView(articleId);
+    });
+  });
+
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (sortState.col === col) sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+      else { sortState.col = col; sortState.dir = 'desc'; }
+      expandedIndex = null;
+      render();
+    });
+  });
+}
+
+async function init() {
+  allRows = ARTICLES;
+  populateFilterOptions(allRows);
+  updateStats(allRows);
+  document.getElementById('filters').style.display = 'flex';
+  document.getElementById('last-updated').textContent = LAST_SYNCED + ' 동기화';
+  expandedIndex = null;
+  await loadViewCounts();
+  renderCategoryNav();
+  render();
+}
+
+document.getElementById('search-input').addEventListener('input', () => { expandedIndex = null; render(); });
+document.getElementById('filter-category').addEventListener('change', () => { expandedIndex = null; renderCategoryNav(); render(); });
+document.getElementById('filter-importance').addEventListener('change', () => { expandedIndex = null; render(); });
+document.getElementById('filter-status').addEventListener('change', () => { expandedIndex = null; render(); });
+document.getElementById('mustread-toggle').addEventListener('click', (e) => {
+  e.currentTarget.classList.toggle('active');
+  expandedIndex = null;
+  render();
+});
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-category').value = '';
+  document.getElementById('filter-importance').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('mustread-toggle').classList.remove('active');
+  expandedIndex = null;
+  renderCategoryNav();
+  render();
+});
+
+init();
+</script>
+
+</body>
+</html>
