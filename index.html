@@ -673,6 +673,9 @@ let sortState = { col: 'date', dir: 'desc' };
 let expandedIndex = null;
 let viewCounts = {};
 
+const COUNTAPI_BASE = 'https://countapi.mileshilliard.com/api/v1';
+const COUNTAPI_PREFIX = 'echomkt-knowledgehub-';
+
 function hashId(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
@@ -680,30 +683,31 @@ function hashId(str) {
 }
 
 async function loadViewCounts() {
-  try {
-    const res = await window.storage.get('kh_view_counts', true);
-    viewCounts = res && res.value ? JSON.parse(res.value) : {};
-  } catch (e) {
-    viewCounts = {};
-  }
+  const results = await Promise.all(ARTICLES.map(async (r) => {
+    const id = hashId(r.title);
+    try {
+      const res = await fetch(`${COUNTAPI_BASE}/get/${COUNTAPI_PREFIX}${id}`);
+      if (!res.ok) return [id, 0];
+      const data = await res.json();
+      return [id, parseInt(data.value, 10) || 0];
+    } catch (e) {
+      return [id, 0];
+    }
+  }));
+  viewCounts = Object.fromEntries(results);
 }
 
 async function recordView(articleId) {
   try {
-    let current = {};
-    try {
-      const res = await window.storage.get('kh_view_counts', true);
-      current = res && res.value ? JSON.parse(res.value) : {};
-    } catch (e) {
-      current = {};
+    const res = await fetch(`${COUNTAPI_BASE}/hit/${COUNTAPI_PREFIX}${articleId}`);
+    if (res.ok) {
+      const data = await res.json();
+      viewCounts[articleId] = parseInt(data.value, 10) || 0;
     }
-    current[articleId] = (current[articleId] || 0) + 1;
-    await window.storage.set('kh_view_counts', JSON.stringify(current), true);
-    viewCounts = current;
-    render();
   } catch (e) {
     console.error('조회수 기록 실패', e);
   }
+  render();
 }
 
 function populateFilterOptions(rows) {
