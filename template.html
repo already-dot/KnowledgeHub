@@ -464,6 +464,52 @@
   }
   .detail-link:hover { background: var(--ink-soft); }
 
+  .feedback-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .fb-q {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .fb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+  .fb-btn:hover:not(:disabled) {
+    border-color: var(--teal);
+    background: var(--teal-soft);
+  }
+  .fb-btn.voted {
+    background: var(--teal-soft);
+    border-color: var(--teal);
+    color: var(--teal);
+    cursor: default;
+  }
+  .fb-thumb { font-size: 13px; line-height: 1; }
+  .fb-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding-left: 7px;
+    border-left: 1px solid var(--line-strong);
+    color: var(--muted);
+  }
+  .fb-btn.voted .fb-count { color: var(--teal); border-left-color: var(--teal); }
+
   /* ---------- States ---------- */
   .state-box {
     padding: 60px 20px;
@@ -617,9 +663,11 @@ let allRows = [];
 let sortState = { col: 'date', dir: 'desc' };
 let expandedIndex = null;
 let viewCounts = {};
+let helpfulCounts = {};
 
 const COUNTAPI_BASE = 'https://countapi.mileshilliard.com/api/v1';
 const COUNTAPI_PREFIX = 'echomkt-knowledgehub-';
+const HELPFUL_PREFIX = 'echomkt-khhelpful-';
 
 function hashId(str) {
   let h = 0;
@@ -627,19 +675,45 @@ function hashId(str) {
   return 'a' + Math.abs(h).toString(36);
 }
 
+function hasVoted(articleId) {
+  try {
+    return localStorage.getItem('kh_voted_' + articleId) === '1';
+  } catch (e) {
+    return false;
+  }
+}
+
+function markVoted(articleId) {
+  try {
+    localStorage.setItem('kh_voted_' + articleId, '1');
+  } catch (e) { /* 저장 불가 환경이면 무시 */ }
+}
+
+async function countapiGet(prefix, id) {
+  try {
+    const res = await fetch(`${COUNTAPI_BASE}/get/${prefix}${id}`);
+    if (!res.ok) return 0;
+    const data = await res.json();
+    return parseInt(data.value, 10) || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
 async function loadViewCounts() {
   const results = await Promise.all(ARTICLES.map(async (r) => {
     const id = hashId(r.title);
-    try {
-      const res = await fetch(`${COUNTAPI_BASE}/get/${COUNTAPI_PREFIX}${id}`);
-      if (!res.ok) return [id, 0];
-      const data = await res.json();
-      return [id, parseInt(data.value, 10) || 0];
-    } catch (e) {
-      return [id, 0];
-    }
+    return [id, await countapiGet(COUNTAPI_PREFIX, id)];
   }));
   viewCounts = Object.fromEntries(results);
+}
+
+async function loadHelpfulCounts() {
+  const results = await Promise.all(ARTICLES.map(async (r) => {
+    const id = hashId(r.title);
+    return [id, await countapiGet(HELPFUL_PREFIX, id)];
+  }));
+  helpfulCounts = Object.fromEntries(results);
 }
 
 async function recordView(articleId) {
@@ -653,6 +727,23 @@ async function recordView(articleId) {
     console.error('조회수 기록 실패', e);
   }
   render();
+}
+
+async function recordHelpful(articleId) {
+  if (hasVoted(articleId)) return;
+  markVoted(articleId);
+  helpfulCounts[articleId] = (helpfulCounts[articleId] || 0) + 1;
+  render();
+  try {
+    const res = await fetch(`${COUNTAPI_BASE}/hit/${HELPFUL_PREFIX}${articleId}`);
+    if (res.ok) {
+      const data = await res.json();
+      helpfulCounts[articleId] = parseInt(data.value, 10) || helpfulCounts[articleId];
+      render();
+    }
+  } catch (e) {
+    console.error('평가 기록 실패', e);
+  }
 }
 
 function populateFilterOptions(rows) {
@@ -792,11 +883,21 @@ function render() {
     </tr>`;
 
     if (isOpen) {
+      const helpful = helpfulCounts[articleId] || 0;
+      const voted = hasVoted(articleId);
       html += `<tr class="detail-row"><td colspan="8"><div class="detail-panel">
         <div class="detail-block"><div class="h">WHY IT MATTERS / 에코 시사점</div><div class="v">${escapeHtml(r.why) || '—'}</div></div>
         <div class="detail-block"><div class="h">추천 대상 · 열람 구분</div><div class="v">${escapeHtml(r.audience) || '—'} · ${escapeHtml(r.access) || '—'}</div></div>
         <div class="detail-block detail-full">
           ${r.link ? `<a class="detail-link" href="${escapeHtml(r.link)}" target="_blank" rel="noopener">원문 보기 ↗</a>` : ''}
+        </div>
+        <div class="detail-block detail-full feedback-bar">
+          <span class="fb-q">이 아티클, 도움이 되셨나요?</span>
+          <button class="fb-btn ${voted ? 'voted' : ''}" data-helpful-id="${articleId}" ${voted ? 'disabled' : ''}>
+            <span class="fb-thumb">👍</span>
+            <span class="fb-text">${voted ? '평가해주셔서 감사합니다' : '도움이 됐어요'}</span>
+            <span class="fb-count">${helpful}</span>
+          </button>
         </div>
       </div></td></tr>`;
     }
@@ -813,6 +914,13 @@ function render() {
       expandedIndex = opening ? idx : null;
       render();
       if (opening && articleId) recordView(articleId);
+    });
+  });
+
+  area.querySelectorAll('[data-helpful-id]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      recordHelpful(btn.dataset.helpfulId);
     });
   });
 
@@ -834,7 +942,7 @@ async function init() {
   document.getElementById('filters').style.display = 'flex';
   document.getElementById('last-updated').textContent = LAST_SYNCED + ' 동기화';
   expandedIndex = null;
-  await loadViewCounts();
+  await Promise.all([loadViewCounts(), loadHelpfulCounts()]);
   renderCategoryNav();
   render();
 }
