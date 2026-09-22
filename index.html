@@ -5,33 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Knowledge Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
   :root {
-    --paper: #F5F1E6;
-    --paper-raised: #FBF8F1;
-    --ink: #1C1A16;
-    --ink-soft: #4A453B;
-    --muted: #8A8270;
-    --line: #DDD5C0;
-    --line-strong: #C7BCA0;
-    --red: #A5382B;
-    --red-soft: #F3E2DD;
-    --teal: #2F6B5E;
-    --teal-soft: #E1EBE7;
-    --navy: #2C3B57;
-    --navy-soft: #E2E5EC;
-    --forest: #3E5C3A;
-    --forest-soft: #E5EAE1;
-    --mustard: #A87A20;
-    --mustard-soft: #F1E8D4;
-    --plum: #6B4A6B;
-    --plum-soft: #ECE3EC;
-    --brick: #8A4B32;
-    --brick-soft: #EFE1D9;
-    --font-serif: 'Noto Serif KR', Georgia, serif;
-    --font-sans: 'Noto Sans KR', -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    /* 전체/서피스 배경 */
+    --paper: #F7F8FA;         /* 페이지 전체 배경 */
+    --paper-raised: #FFFFFF;  /* 콘텐츠/입력 영역 배경 */
+    --row-hover: #FAFBFF;     /* 테이블 행 hover */
+
+    /* 텍스트 */
+    --ink: #182033;           /* 기본 텍스트 */
+    --ink-soft: #7A8394;      /* 보조 텍스트 */
+    --muted: #9AA2AF;         /* 약한 보조 텍스트 */
+
+    /* 구분선 (기존 --line / --line-strong 모두 동일 톤으로 통일) */
+    --line: #E4E7EC;
+    --line-strong: #E4E7EC;
+
+    /* 포인트 컬러 (블루) */
+    --navy: #3157D5;          /* 포인트 컬러 (기존 --navy 변수를 그대로 accent로 재사용) */
+    --navy-soft: #EEF2FF;     /* 포인트 배지 배경 */
+
+    /* Must Read / 강조 레드 */
+    --red: #C64A45;
+    --red-soft: #FFF1F0;
+    --red-line: #F1C9C6;
+
+    /* 활성 상태(따봉 등)에 쓰는 보조 포인트 — accent와 동일하게 통일 */
+    --teal: #3157D5;
+    --teal-soft: #EEF2FF;
+
+    /* 표 텍스트 톤 */
+    --text-heading: #8C95A4;  /* 표 헤더 */
+    --text-summary: #626C7F;  /* 핵심 요약 */
+    --text-meta: #7C8698;     /* 날짜 등 부가정보 */
+    --text-input: #4F596D;    /* 입력 텍스트 */
+
+    /* 카테고리 텍스트 메뉴 */
+    --cat-text: #7A8394;
+    --cat-count: #AAB0BA;
+
+    /* 더 이상 개별 카테고리 색상을 쓰지 않으므로 forest/mustard/plum/brick 토큰은 제거 */
+
+    --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    --font-serif: var(--font-sans);  /* 세리프 완전 제거 — 산세리프로 통일 */
+    --font-mono: var(--font-sans);   /* 모노스페이스도 제거하고 tabular-nums로 정렬 */
   }
 
   * { box-sizing: border-box; }
@@ -57,17 +75,18 @@
     align-items: flex-end;
     gap: 20px;
     padding-bottom: 18px;
-    border-bottom: 3px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
     flex-wrap: wrap;
   }
 
   .masthead h1 {
-    font-family: var(--font-serif);
-    font-weight: 700;
+    font-family: var(--font-sans);
+    font-weight: 600;
     font-size: 40px;
     letter-spacing: -0.01em;
     margin: 0;
     line-height: 1;
+    color: var(--ink);
   }
 
   .echo-mark {
@@ -78,21 +97,21 @@
     font-size: 13px;
     color: var(--ink-soft);
     margin-top: 8px;
-    font-family: var(--font-serif);
-    font-style: italic;
+    font-family: var(--font-sans);
+    font-style: normal;
   }
 
   .masthead-meta {
     text-align: right;
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 12px;
     color: var(--ink-soft);
     line-height: 1.7;
   }
 
   .masthead-meta .edition {
-    color: var(--red);
-    font-weight: 600;
+    color: var(--muted);
+    font-weight: 500;
   }
 
   .popular-panels {
@@ -104,8 +123,8 @@
 
   .weekly-popular {
     padding: 10px 12px;
-    border: 1px solid var(--line-strong);
-    border-radius: 3px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
     background: var(--paper-raised);
     text-align: left;
     min-width: 200px;
@@ -114,7 +133,7 @@
   }
   .wp-label {
     font-size: 10.5px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--red);
     letter-spacing: 0.02em;
     margin-bottom: 6px;
@@ -130,7 +149,7 @@
   }
   .wp-row:first-child { border-top: none; }
   .wp-rank {
-    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     color: var(--muted);
     width: 12px;
     flex-shrink: 0;
@@ -143,7 +162,7 @@
     white-space: nowrap;
   }
   .wp-views {
-    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     color: var(--muted);
     font-size: 10.5px;
     flex-shrink: 0;
@@ -158,14 +177,16 @@
     margin-top: 6px;
     font-size: 10px;
     color: var(--muted);
-    font-style: italic;
+    font-style: normal;
   }
 
   .stats-row {
     display: flex;
     gap: 0;
     margin-top: 0;
-    border-bottom: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
   }
 
   .stat {
@@ -177,66 +198,67 @@
   .stat:last-child { border-right: none; }
 
   .stat .num {
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     font-size: 26px;
-    font-weight: 700;
+    font-weight: 600;
+    color: var(--ink);
   }
   .stat .lbl {
     font-size: 11px;
-    color: var(--muted);
+    color: var(--ink-soft);
     margin-top: 2px;
   }
 
-  /* ---------- Category quick nav ---------- */
-  .section-label {
-    font-size: 11px;
-    font-weight: 700;
+  /* ---------- Category text menu ---------- */
+  .category-menu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    margin: 4px 0 18px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cat-menu-label {
+    font-size: 12px;
     color: var(--muted);
-    letter-spacing: 0.03em;
-    margin: 22px 0 8px;
+    flex-shrink: 0;
   }
 
-  .category-nav {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 8px;
-    margin-bottom: 4px;
-  }
-
-  .cat-chip {
-    text-align: left;
-    border: 1px solid var(--line-strong);
-    border-left: 3px solid var(--chip-fg, var(--line-strong));
-    background: var(--paper-raised);
-    border-radius: 3px;
-    padding: 10px 30px 10px 12px;
+  .cat-item {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 3px 1px 9px;
     cursor: pointer;
     font-family: var(--font-sans);
-    position: relative;
-    transition: box-shadow 0.12s ease;
+    font-size: 13px;
+    color: var(--cat-text);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    flex-shrink: 0;
   }
-  .cat-chip:hover { box-shadow: 0 1px 5px rgba(0,0,0,0.08); }
-  .cat-chip.active {
-    background: var(--chip-bg, var(--paper-raised));
-    border-left-width: 4px;
-  }
-  .cat-emoji { font-size: 15px; margin-right: 5px; }
-  .cat-name { font-weight: 700; font-size: 13px; color: var(--ink); }
-  .cat-desc {
-    display: block;
+  .cat-item-count {
     font-size: 11px;
-    color: var(--muted);
-    margin-top: 4px;
-    line-height: 1.4;
+    color: var(--cat-count);
+    font-variant-numeric: tabular-nums;
   }
-  .cat-count {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
+  .cat-item:hover:not(.active) { color: var(--ink); }
+  .cat-item:focus-visible {
+    outline: 2px solid var(--navy);
+    outline-offset: 2px;
   }
+  .cat-item.active {
+    color: var(--navy);
+    font-weight: 500;
+    border-bottom-color: var(--navy);
+  }
+  .cat-item.active .cat-item-count { color: var(--navy); }
 
   /* ---------- Filter bar ---------- */
   .filters {
@@ -254,13 +276,14 @@
   .search-box input {
     width: 100%;
     padding: 9px 12px 9px 32px;
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--line);
     background: var(--paper-raised);
-    border-radius: 3px;
+    border-radius: 4px;
     font-family: var(--font-sans);
     font-size: 13px;
-    color: var(--ink);
+    color: var(--text-input);
   }
+  .search-box input::placeholder { color: var(--muted); }
   .search-box input:focus { outline: 2px solid var(--navy); outline-offset: -1px; }
   .search-box::before {
     content: "⌕";
@@ -274,52 +297,56 @@
 
   select {
     padding: 9px 10px;
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--line);
     background: var(--paper-raised);
-    border-radius: 3px;
+    border-radius: 4px;
     font-family: var(--font-sans);
     font-size: 13px;
-    color: var(--ink);
+    color: var(--text-input);
     cursor: pointer;
   }
   select:focus { outline: 2px solid var(--navy); outline-offset: -1px; }
 
   .toggle-chip {
     padding: 9px 14px;
-    border: 1px solid var(--line-strong);
-    border-radius: 3px;
+    border: 1px solid var(--red-line);
+    border-radius: 4px;
     background: var(--paper-raised);
     font-size: 13px;
     cursor: pointer;
-    color: var(--ink-soft);
+    color: var(--red);
     white-space: nowrap;
     user-select: none;
   }
+  .toggle-chip:hover { background: var(--red-soft); }
+  .toggle-chip:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
   .toggle-chip.active {
-    background: var(--red);
+    background: var(--red-soft);
     border-color: var(--red);
-    color: #fff;
+    color: var(--red);
     font-weight: 600;
   }
 
   .refresh-btn {
     padding: 9px 14px;
     border: 1px solid var(--ink);
-    border-radius: 3px;
+    border-radius: 4px;
     background: var(--ink);
-    color: var(--paper);
+    color: var(--paper-raised);
     font-size: 13px;
     cursor: pointer;
     font-family: var(--font-sans);
   }
-  .refresh-btn:hover { background: var(--ink-soft); }
+  .refresh-btn:hover { background: var(--text-input); }
+  .refresh-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .refresh-btn:disabled { opacity: 0.5; cursor: default; }
 
   /* ---------- Table ---------- */
   .table-scroll {
     margin-top: 18px;
     overflow-x: auto;
-    border-top: 1px solid var(--line-strong);
+    border-top: 1px solid var(--line);
+    background: var(--paper-raised);
   }
 
   table {
@@ -332,9 +359,9 @@
     text-align: left;
     font-size: 11px;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--text-heading);
     padding: 10px 10px;
-    border-bottom: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line);
     white-space: nowrap;
     cursor: pointer;
     user-select: none;
@@ -347,8 +374,8 @@
     cursor: pointer;
     transition: background 0.12s ease;
   }
-  tbody tr.row:hover { background: var(--paper-raised); }
-  tbody tr.row.expanded { background: var(--paper-raised); }
+  tbody tr.row:hover { background: var(--row-hover); }
+  tbody tr.row.expanded { background: var(--row-hover); }
 
   tbody td {
     padding: 12px 10px;
@@ -357,26 +384,28 @@
   }
 
   .col-date {
-    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 12px;
-    color: var(--ink-soft);
+    color: var(--text-meta);
     white-space: nowrap;
   }
 
   .stars {
     color: var(--red);
     letter-spacing: 1px;
-    font-size: 12px;
+    font-size: 11.5px;
     white-space: nowrap;
   }
 
   .tag {
     display: inline-block;
     padding: 3px 9px;
-    border-radius: 3px;
+    border-radius: 4px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     white-space: nowrap;
+    background: var(--navy-soft);
+    color: var(--navy);
   }
 
   .col-title {
@@ -385,6 +414,7 @@
   .col-title .headline {
     font-weight: 600;
     line-height: 1.4;
+    color: var(--ink);
   }
   .col-title .subtag {
     font-size: 11px;
@@ -394,30 +424,31 @@
 
   .col-summary {
     max-width: 280px;
-    color: var(--ink-soft);
-    line-height: 1.5;
+    color: var(--text-summary);
+    line-height: 1.6;
     font-size: 12.5px;
+    font-weight: 400;
   }
 
   .status-badge {
     display: inline-block;
     padding: 4px 10px;
-    border-radius: 3px;
+    border-radius: 4px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
   }
-  .status-must { background: var(--red); color: #fff; }
-  .status-worth { background: var(--paper); border: 1px solid var(--line-strong); color: var(--ink-soft); }
-  .status-archive { background: transparent; border: 1px dashed var(--line-strong); color: var(--muted); }
-  .status-default { background: var(--paper); border: 1px solid var(--line-strong); color: var(--ink-soft); }
+  .status-must { background: var(--red-soft); color: var(--red); border: 1px solid var(--red-line); }
+  .status-worth { background: transparent; border: 1px solid var(--line); color: #5F697B; }
+  .status-archive { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+  .status-default { background: transparent; border: 1px solid var(--line); color: #5F697B; }
 
   tbody tr.row.is-archived { opacity: 0.5; }
   tbody tr.row.is-archived:hover { opacity: 0.75; }
 
   .col-source {
     font-size: 12px;
-    color: var(--ink-soft);
+    color: var(--text-meta);
     white-space: nowrap;
   }
   .col-region {
@@ -428,9 +459,9 @@
   }
 
   .col-views {
-    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 12.5px;
-    color: var(--ink-soft);
+    color: var(--text-meta);
     white-space: nowrap;
     text-align: right;
   }
@@ -443,16 +474,16 @@
     border-bottom: 1px solid var(--line);
   }
   .detail-panel {
-    background: var(--paper-raised);
+    background: var(--paper);
     padding: 18px 22px;
-    border-left: 3px solid var(--red);
+    border-left: 2px solid var(--navy);
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 18px 32px;
   }
   .detail-block .h {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--muted);
     margin-bottom: 6px;
   }
@@ -469,13 +500,13 @@
     margin-top: 4px;
     padding: 7px 14px;
     background: var(--ink);
-    color: var(--paper);
+    color: var(--paper-raised);
     text-decoration: none;
     font-size: 12px;
-    border-radius: 3px;
+    border-radius: 4px;
     font-weight: 600;
   }
-  .detail-link:hover { background: var(--ink-soft); }
+  .detail-link:hover { background: var(--text-input); }
 
   .feedback-bar {
     display: flex;
@@ -494,9 +525,9 @@
     align-items: center;
     gap: 7px;
     padding: 7px 13px;
-    border: 1px solid var(--line-strong);
-    background: var(--paper);
-    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    border-radius: 4px;
     font-family: var(--font-sans);
     font-size: 12px;
     color: var(--ink);
@@ -507,6 +538,7 @@
     border-color: var(--teal);
     background: var(--teal-soft);
   }
+  .fb-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .fb-btn.voted {
     background: var(--teal-soft);
     border-color: var(--teal);
@@ -515,10 +547,10 @@
   }
   .fb-thumb { font-size: 13px; line-height: 1; }
   .fb-count {
-    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 11px;
     padding-left: 7px;
-    border-left: 1px solid var(--line-strong);
+    border-left: 1px solid var(--line);
     color: var(--muted);
   }
   .fb-btn.voted .fb-count { color: var(--teal); border-left-color: var(--teal); }
@@ -527,27 +559,28 @@
   .state-box {
     padding: 60px 20px;
     text-align: center;
-    color: var(--muted);
+    color: var(--ink-soft);
     font-size: 14px;
   }
   .state-box .big {
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
+    font-weight: 600;
     font-size: 18px;
     color: var(--ink);
     margin-bottom: 8px;
   }
   .state-box code {
-    background: var(--paper-raised);
+    background: var(--paper);
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: 4px;
     font-size: 12px;
   }
 
   .spinner {
     width: 22px;
     height: 22px;
-    border: 3px solid var(--line-strong);
-    border-top-color: var(--red);
+    border: 3px solid var(--line);
+    border-top-color: var(--navy);
     border-radius: 50%;
     margin: 0 auto 14px;
     animation: spin 0.8s linear infinite;
@@ -562,6 +595,7 @@
     .masthead-meta { text-align: left; }
     .stats-row { flex-wrap: wrap; }
     .stat { flex: 1 1 50%; border-bottom: 1px solid var(--line); }
+    .search-box { flex: 1 1 100%; }
   }
 </style>
 </head>
@@ -599,8 +633,7 @@
     <div class="stat"><div class="num" id="stat-latest">–</div><div class="lbl">최신 등록일</div></div>
   </div>
 
-  <div class="section-label" id="category-nav-label" style="display:none;">카테고리 바로가기</div>
-  <div class="category-nav" id="category-nav"></div>
+  <div class="category-menu" id="category-nav"></div>
 
   <div class="filters" id="filters" style="display:none;">
     <div class="search-box">
@@ -623,7 +656,7 @@
 </div>
 
 <script>
-const LAST_SYNCED = '2026-09-22 오후 1:27';
+const LAST_SYNCED = '2026-09-22 오후 3:20';
 
 const ARTICLES = [
   {
@@ -1018,51 +1051,39 @@ const ARTICLES = [
   }
 ];
 
-const CATEGORY_COLORS = {
-  'AI·테크':      { bg: 'var(--teal-soft)',  fg: 'var(--teal)'   },
-  '브랜드·커머스': { bg: 'var(--plum-soft)',  fg: 'var(--plum)'   },
-  '플랫폼·미디어': { bg: 'var(--navy-soft)',  fg: 'var(--navy)'   },
-  '에이전시·경쟁사': { bg: 'var(--forest-soft)', fg: 'var(--forest)' },
-  '광고·마케팅':  { bg: 'var(--mustard-soft)', fg: 'var(--mustard)' },
-  '글로벌 사례':  { bg: 'var(--brick-soft)',  fg: 'var(--brick)'  },
-};
-function categoryStyle(cat) {
-  return CATEGORY_COLORS[cat] || { bg: 'var(--line)', fg: 'var(--ink-soft)' };
-}
-
 const CATEGORY_META = {
-  'AI·테크':        { emoji: '🤖', desc: 'AI / Agent / MarTech / AdTech' },
-  '광고·마케팅':    { emoji: '📣', desc: '시장·캠페인·측정' },
-  '플랫폼·미디어':  { emoji: '📱', desc: 'Google / Meta / TikTok / 국내 플랫폼' },
-  '브랜드·커머스':  { emoji: '🛍', desc: 'D2C / CRM / Commerce' },
-  '에이전시·경쟁사': { emoji: '🏢', desc: '국내외 에이전시 / BM' },
-  '글로벌 사례':    { emoji: '🌎', desc: '해외 벤치마크' },
+  'AI·테크':        { emoji: '🤖', desc: '생성형 AI, AI 에이전트, 검색, 자동화, 보안 등' },
+  '광고·마케팅':    { emoji: '📣', desc: '마케팅 전략, 광고 효과, 퍼포먼스 마케팅, 고객 경험' },
+  '플랫폼·미디어':  { emoji: '📱', desc: '매체 변화, 플랫폼 정책, 애드테크, 미디어 상품' },
+  '브랜드·비즈니스': { emoji: '🛍', desc: '브랜드 성장, 커머스, 기업 전략, 비즈니스 모델' },
+  '인재·조직':      { emoji: '👥', desc: '채용, 새로운 직무, 인재상, 조직 운영, 업무 방식의 변화' },
+  '데이터·인사이트': { emoji: '📊', desc: '데이터 활용, 측정, 분석, 소비자·시장 인사이트' },
 };
 
 function renderCategoryNav() {
   const nav = document.getElementById('category-nav');
-  const label = document.getElementById('category-nav-label');
   const current = document.getElementById('filter-category').value;
   const cats = Object.keys(CATEGORY_META);
+  const total = allRows.length;
 
-  label.style.display = 'block';
-  nav.innerHTML = cats.map(cat => {
-    const meta = CATEGORY_META[cat];
-    const cs = categoryStyle(cat);
-    const count = allRows.filter(r => r.category === cat).length;
-    const active = current === cat;
-    return `<button class="cat-chip ${active ? 'active' : ''}" data-cat="${escapeHtml(cat)}" style="--chip-fg:${cs.fg};--chip-bg:${cs.bg}">
-      <span class="cat-emoji">${meta.emoji}</span><span class="cat-name">${escapeHtml(cat)}</span>
-      <span class="cat-count">${count}건</span>
-      <span class="cat-desc">${escapeHtml(meta.desc)}</span>
+  const items = [
+    { key: '', label: '전체', count: total },
+    ...cats.map(cat => ({ key: cat, label: cat, count: allRows.filter(r => r.category === cat).length })),
+  ];
+
+  nav.innerHTML = `<span class="cat-menu-label">카테고리</span>` + items.map(it => {
+    const active = current === it.key;
+    return `<button class="cat-item ${active ? 'active' : ''}" data-cat="${escapeHtml(it.key)}">
+      <span class="cat-item-name">${escapeHtml(it.label)}</span>
+      <span class="cat-item-count">${it.count}</span>
     </button>`;
   }).join('');
 
-  nav.querySelectorAll('.cat-chip').forEach(btn => {
+  nav.querySelectorAll('.cat-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const cat = btn.dataset.cat;
       const sel = document.getElementById('filter-category');
-      sel.value = (sel.value === cat) ? '' : cat;
+      sel.value = cat;
       expandedIndex = null;
       renderCategoryNav();
       render();
@@ -1298,7 +1319,6 @@ function render() {
     </tr></thead><tbody>`;
 
   rows.forEach((r, i) => {
-    const cs = categoryStyle(r.category);
     const isOpen = expandedIndex === i;
     const articleId = hashId(r.title);
     const views = viewCounts[articleId] || 0;
@@ -1306,7 +1326,7 @@ function render() {
     html += `<tr class="row ${isOpen ? 'expanded' : ''} ${r.status.includes('아카이브') ? 'is-archived' : ''}" data-idx="${i}" data-article-id="${articleId}">
       <td class="col-date">${escapeHtml(r.date)}</td>
       <td><span class="stars">${escapeHtml(r.importance)}</span></td>
-      <td><span class="tag" style="background:${cs.bg};color:${cs.fg}">${escapeHtml(r.category)}</span></td>
+      <td><span class="tag">${escapeHtml(r.category)}</span></td>
       <td class="col-source">${escapeHtml(r.source)}<span class="col-region">${escapeHtml(r.region)}</span></td>
       <td class="col-title"><div class="headline">${escapeHtml(r.title)}</div><div class="subtag">${escapeHtml(r.tag)}</div></td>
       <td class="col-summary">${escapeHtml(r.summary)}</td>
