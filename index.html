@@ -341,6 +341,60 @@
   .refresh-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .refresh-btn:disabled { opacity: 0.5; cursor: default; }
 
+  .date-range-inputs { display: inline-flex; align-items: center; gap: 6px; }
+  .date-input {
+    padding: 8px 8px;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    border-radius: 4px;
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    color: var(--text-input);
+  }
+  .date-input:focus { outline: 2px solid var(--navy); outline-offset: -1px; }
+  .date-sep { color: var(--muted); font-size: 12px; }
+
+  .toggle-chip.neutral {
+    border-color: var(--line);
+    color: var(--ink-soft);
+  }
+  .toggle-chip.neutral:hover { background: var(--navy-soft); }
+  .toggle-chip.neutral.active {
+    background: var(--navy-soft);
+    border-color: var(--navy);
+    color: var(--navy);
+    font-weight: 600;
+  }
+
+  /* ---------- Active filter chips ---------- */
+  .active-filters {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 4px;
+  }
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px 4px 10px;
+    background: var(--navy-soft);
+    color: var(--navy);
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .chip-x {
+    background: none;
+    border: none;
+    color: var(--navy);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    padding: 0;
+  }
+  .chip-x:hover { opacity: 0.65; }
+  .chip-x:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+
   /* ---------- Table ---------- */
   .table-scroll {
     margin-top: 18px;
@@ -555,6 +609,43 @@
   }
   .fb-btn.voted .fb-count { color: var(--teal); border-left-color: var(--teal); }
 
+  .save-btn { margin-left: auto; }
+
+  .related-block .h { margin-bottom: 8px; }
+  .related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .related-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper-raised);
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--font-sans);
+  }
+  .related-item:hover { border-color: var(--navy); background: var(--navy-soft); }
+  .related-item:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .related-title { font-size: 12.5px; color: var(--ink); font-weight: 500; }
+  .related-meta { font-size: 11px; color: var(--muted); }
+
+  tbody tr.row.flash-highlight { animation: flashRow 1.5s ease; }
+  @keyframes flashRow {
+    0% { background: var(--navy-soft); }
+    100% { background: transparent; }
+  }
+
+  .wp-row[data-goto-title] { cursor: pointer; }
+  .wp-row[data-goto-title]:hover .wp-title { color: var(--navy); text-decoration: underline; }
+  .wp-row[data-goto-title]:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+
   /* ---------- States ---------- */
   .state-box {
     padding: 60px 20px;
@@ -599,6 +690,8 @@
     .filters { gap: 8px; }
     .filters select { flex: 1 1 130px; }
     .toggle-chip, .refresh-btn { flex: 0 0 auto; }
+    .date-range-inputs { flex: 1 1 100%; }
+    .date-input { flex: 1 1 auto; min-width: 0; }
 
     .category-menu { gap: 16px; padding-right: 16px; }
 
@@ -678,16 +771,36 @@
       <option value="읽어볼 만함">읽어볼 만함</option>
       <option value="아카이브">아카이브</option>
     </select>
+    <select id="filter-period">
+      <option value="all">전체 기간</option>
+      <option value="7d">최근 7일</option>
+      <option value="30d">최근 30일</option>
+      <option value="custom">날짜 직접 선택</option>
+    </select>
+    <span class="date-range-inputs" id="date-range-inputs" style="display:none;">
+      <input type="date" id="filter-date-start" class="date-input" aria-label="시작일">
+      <span class="date-sep">~</span>
+      <input type="date" id="filter-date-end" class="date-input" aria-label="종료일">
+    </span>
+    <select id="sort-select" aria-label="정렬 기준">
+      <option value="latest">최신순</option>
+      <option value="views">조회순</option>
+      <option value="helpful">추천순</option>
+      <option value="importance">중요도순</option>
+    </select>
     <div class="toggle-chip" id="mustread-toggle">🔥 Must Read만</div>
+    <div class="toggle-chip neutral" id="saved-toggle">🔖 저장한 아티클만</div>
     <button class="refresh-btn" id="refresh-btn">필터 초기화</button>
   </div>
+
+  <div class="active-filters" id="active-filters"></div>
 
   <div id="content-area"></div>
 
 </div>
 
 <script>
-const LAST_SYNCED = '2026-09-23 오전 9:16';
+const LAST_SYNCED = '2026-09-23 오전 10:02';
 
 const ARTICLES = [
   {
@@ -1157,6 +1270,32 @@ let sortState = { col: 'date', dir: 'desc' };
 let expandedIndex = null;
 let viewCounts = {};
 let helpfulCounts = {};
+let savedIds = new Set();
+let savedOnly = false;
+let dateFilter = { mode: 'all', start: '', end: '' };
+let flashRowId = null;
+
+function loadSavedIds() {
+  try {
+    const raw = localStorage.getItem('kh_saved_articles');
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function persistSavedIds() {
+  try {
+    localStorage.setItem('kh_saved_articles', JSON.stringify([...savedIds]));
+  } catch (e) { /* 저장 불가 환경이면 무시 */ }
+}
+
+function toggleSaved(articleId) {
+  if (savedIds.has(articleId)) savedIds.delete(articleId);
+  else savedIds.add(articleId);
+  persistSavedIds();
+  render();
+}
 
 const COUNTAPI_BASE = 'https://countapi.mileshilliard.com/api/v1';
 const COUNTAPI_PREFIX = 'echomkt-knowledgehub-';
@@ -1275,6 +1414,8 @@ function getFiltered() {
     if (imp && r.importance !== imp) return false;
     if (stat && r.status !== stat) return false;
     if (mustOnly && !r.status.includes('Must')) return false;
+    if (savedOnly && !savedIds.has(hashId(r.title))) return false;
+    if (!inDateRange(r.date)) return false;
     if (q) {
       const hay = (r.title + ' ' + r.summary + ' ' + r.tag + ' ' + r.source).toLowerCase();
       if (!hay.includes(q)) return false;
@@ -1287,13 +1428,96 @@ function getFiltered() {
     if (sortState.col === 'date') { av = a.date; bv = b.date; }
     else if (sortState.col === 'importance') { av = a.importance.length; bv = b.importance.length; }
     else if (sortState.col === 'views') { av = viewCounts[hashId(a.title)] || 0; bv = viewCounts[hashId(b.title)] || 0; }
+    else if (sortState.col === 'helpful') { av = helpfulCounts[hashId(a.title)] || 0; bv = helpfulCounts[hashId(b.title)] || 0; }
     else { av = a[sortState.col] || ''; bv = b[sortState.col] || ''; }
     if (av < bv) return sortState.dir === 'asc' ? -1 : 1;
     if (av > bv) return sortState.dir === 'asc' ? 1 : -1;
+    if (sortState.col !== 'date') {
+      if (a.date < b.date) return 1;
+      if (a.date > b.date) return -1;
+    }
     return 0;
   });
 
   return rows;
+}
+
+function inDateRange(dateStr) {
+  if (dateFilter.mode === 'all') return true;
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return true;
+  if (dateFilter.mode === '7d' || dateFilter.mode === '30d') {
+    const days = dateFilter.mode === '7d' ? 7 : 30;
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - days);
+    return d >= cutoff;
+  }
+  if (dateFilter.mode === 'custom') {
+    if (dateFilter.start && d < new Date(dateFilter.start)) return false;
+    if (dateFilter.end && d > new Date(dateFilter.end)) return false;
+    return true;
+  }
+  return true;
+}
+
+function tagTokens(tagStr) {
+  return String(tagStr || '').split(/[\/,、]+/).map(t => t.trim()).filter(Boolean);
+}
+
+function findRelated(article, all) {
+  const myTags = new Set(tagTokens(article.tag));
+  if (myTags.size === 0) return [];
+  return all
+    .filter(r => r.title !== article.title)
+    .map(r => {
+      const overlapTags = tagTokens(r.tag).filter(t => myTags.has(t));
+      return { article: r, overlapCount: overlapTags.length, overlapTags };
+    })
+    .filter(x => x.overlapCount > 0)
+    .sort((a, b) => {
+      if (b.overlapCount !== a.overlapCount) return b.overlapCount - a.overlapCount;
+      if (b.article.importance.length !== a.article.importance.length) return b.article.importance.length - a.article.importance.length;
+      return a.article.date < b.article.date ? 1 : -1;
+    })
+    .slice(0, 3);
+}
+
+function resetAllFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-category').value = '';
+  document.getElementById('filter-importance').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('mustread-toggle').classList.remove('active');
+  document.getElementById('saved-toggle').classList.remove('active');
+  savedOnly = false;
+  document.getElementById('filter-period').value = 'all';
+  document.getElementById('filter-date-start').value = '';
+  document.getElementById('filter-date-end').value = '';
+  document.getElementById('date-range-inputs').style.display = 'none';
+  dateFilter = { mode: 'all', start: '', end: '' };
+}
+
+function goToArticle(title) {
+  const articleId = hashId(title);
+  const visible = getFiltered().some(r => hashId(r.title) === articleId);
+  if (!visible) {
+    resetAllFilters();
+    renderCategoryNav();
+  }
+  const rows = getFiltered();
+  const idx = rows.findIndex(r => hashId(r.title) === articleId);
+  if (idx === -1) return;
+  expandedIndex = idx;
+  flashRowId = articleId;
+  render();
+  recordView(articleId);
+  requestAnimationFrame(() => {
+    const tr = document.querySelector(`tr.row[data-article-id="${articleId}"]`);
+    if (tr) tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  setTimeout(() => { flashRowId = null; }, 1600);
 }
 
 function statusClass(status) {
@@ -1316,11 +1540,12 @@ function renderWeeklyPopular() {
     return;
   }
 
-  list.innerHTML = ranked.map((r, i) => `<div class="wp-row">
+  list.innerHTML = ranked.map((r, i) => `<div class="wp-row" data-goto-title="${escapeHtml(r.title)}" tabindex="0" role="button">
     <span class="wp-rank">${i + 1}</span>
     <span class="wp-title">${escapeHtml(r.title)}</span>
     <span class="wp-views">${r.views}회</span>
   </div>`).join('');
+  bindGotoHandlers(list);
 }
 
 function renderRecommendedPopular() {
@@ -1336,16 +1561,80 @@ function renderRecommendedPopular() {
     return;
   }
 
-  list.innerHTML = ranked.map((r, i) => `<div class="wp-row">
+  list.innerHTML = ranked.map((r, i) => `<div class="wp-row" data-goto-title="${escapeHtml(r.title)}" tabindex="0" role="button">
     <span class="wp-rank">${i + 1}</span>
     <span class="wp-title">${escapeHtml(r.title)}</span>
     <span class="wp-views">${r.helpful}👍</span>
   </div>`).join('');
+  bindGotoHandlers(list);
+}
+
+function bindGotoHandlers(container) {
+  container.querySelectorAll('[data-goto-title]').forEach(el => {
+    el.addEventListener('click', () => goToArticle(el.dataset.gotoTitle));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToArticle(el.dataset.gotoTitle); }
+    });
+  });
+}
+
+function renderActiveFilters() {
+  const wrap = document.getElementById('active-filters');
+  if (!wrap) return;
+  const chips = [];
+  const cat = document.getElementById('filter-category').value;
+  const imp = document.getElementById('filter-importance').value;
+  const stat = document.getElementById('filter-status').value;
+  const q = document.getElementById('search-input').value.trim();
+  const mustOnly = document.getElementById('mustread-toggle').classList.contains('active');
+
+  if (cat) chips.push({ key: 'category', label: cat });
+  if (imp) chips.push({ key: 'importance', label: imp });
+  if (stat) chips.push({ key: 'status', label: stat });
+  if (mustOnly) chips.push({ key: 'mustread', label: 'Must Read' });
+  if (dateFilter.mode !== 'all') {
+    let label = dateFilter.mode === '7d' ? '최근 7일' : dateFilter.mode === '30d' ? '최근 30일' : `${dateFilter.start || '시작일'} ~ ${dateFilter.end || '종료일'}`;
+    chips.push({ key: 'period', label });
+  }
+  if (savedOnly) chips.push({ key: 'saved', label: '저장한 아티클' });
+  if (q) chips.push({ key: 'search', label: `"${q}"` });
+
+  if (chips.length === 0) {
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.style.display = 'flex';
+  wrap.innerHTML = chips.map(c => `<span class="filter-chip">${escapeHtml(c.label)}<button class="chip-x" data-chip-key="${c.key}" aria-label="${escapeHtml(c.label)} 필터 해제">×</button></span>`).join('');
+
+  wrap.querySelectorAll('.chip-x').forEach(btn => {
+    btn.addEventListener('click', () => clearChip(btn.dataset.chipKey));
+  });
+}
+
+function clearChip(key) {
+  if (key === 'category') document.getElementById('filter-category').value = '';
+  if (key === 'importance') document.getElementById('filter-importance').value = '';
+  if (key === 'status') document.getElementById('filter-status').value = '';
+  if (key === 'mustread') document.getElementById('mustread-toggle').classList.remove('active');
+  if (key === 'saved') { savedOnly = false; document.getElementById('saved-toggle').classList.remove('active'); }
+  if (key === 'search') document.getElementById('search-input').value = '';
+  if (key === 'period') {
+    dateFilter = { mode: 'all', start: '', end: '' };
+    document.getElementById('filter-period').value = 'all';
+    document.getElementById('filter-date-start').value = '';
+    document.getElementById('filter-date-end').value = '';
+    document.getElementById('date-range-inputs').style.display = 'none';
+  }
+  expandedIndex = null;
+  renderCategoryNav();
+  render();
 }
 
 function render() {
   renderWeeklyPopular();
   renderRecommendedPopular();
+  renderActiveFilters();
   const rows = getFiltered();
   const area = document.getElementById('content-area');
 
@@ -1358,10 +1647,16 @@ function render() {
   }
 
   if (rows.length === 0) {
-    area.innerHTML = `<div class="state-box">
-      <div class="big">조건에 맞는 아티클이 없습니다</div>
-      <div class="empty-hint">필터나 검색어를 조정해보세요.</div>
-    </div>`;
+    if (savedOnly) {
+      area.innerHTML = `<div class="state-box">
+        <div class="big">저장한 아티클이 없습니다.</div>
+      </div>`;
+    } else {
+      area.innerHTML = `<div class="state-box">
+        <div class="big">조건에 맞는 아티클이 없습니다</div>
+        <div class="empty-hint">필터나 검색어를 조정해보세요.</div>
+      </div>`;
+    }
     return;
   }
 
@@ -1384,7 +1679,8 @@ function render() {
     const articleId = hashId(r.title);
     const views = viewCounts[articleId] || 0;
     const isHot = views >= 3;
-    html += `<tr class="row ${isOpen ? 'expanded' : ''} ${r.status.includes('아카이브') ? 'is-archived' : ''}" data-idx="${i}" data-article-id="${articleId}">
+    const flashClass = articleId === flashRowId ? 'flash-highlight' : '';
+    html += `<tr class="row ${isOpen ? 'expanded' : ''} ${r.status.includes('아카이브') ? 'is-archived' : ''} ${flashClass}" data-idx="${i}" data-article-id="${articleId}">
       <td class="col-date">${escapeHtml(r.date)}</td>
       <td><span class="stars">${escapeHtml(r.importance)}</span></td>
       <td><span class="tag">${escapeHtml(r.category)}</span></td>
@@ -1398,18 +1694,34 @@ function render() {
     if (isOpen) {
       const helpful = helpfulCounts[articleId] || 0;
       const voted = hasVoted(articleId);
+      const saved = savedIds.has(articleId);
+      const related = findRelated(r, allRows);
       html += `<tr class="detail-row"><td colspan="8"><div class="detail-panel">
         <div class="detail-block"><div class="h">WHY IT MATTERS / 에코 시사점</div><div class="v">${escapeHtml(r.why) || '—'}</div></div>
         <div class="detail-block"><div class="h">추천 대상 · 열람 구분</div><div class="v">${escapeHtml(r.audience) || '—'} · ${escapeHtml(r.access) || '—'}</div></div>
         <div class="detail-block detail-full">
           ${r.link ? `<a class="detail-link" href="${escapeHtml(r.link)}" target="_blank" rel="noopener">원문 보기 ↗</a>` : ''}
         </div>
+        ${related.length > 0 ? `
+        <div class="detail-block detail-full related-block">
+          <div class="h">함께 보면 좋은 아티클</div>
+          <div class="related-list">
+            ${related.map(x => `<button class="related-item" data-goto-title="${escapeHtml(x.article.title)}">
+              <span class="related-title">${escapeHtml(x.article.title)}</span>
+              <span class="related-meta">${escapeHtml(x.article.category)} · ${x.overlapTags.map(t => escapeHtml(t)).join(', ')}</span>
+            </button>`).join('')}
+          </div>
+        </div>` : ''}
         <div class="detail-block detail-full feedback-bar">
           <span class="fb-q">이 아티클, 도움이 되셨나요?</span>
           <button class="fb-btn ${voted ? 'voted' : ''}" data-helpful-id="${articleId}" ${voted ? 'disabled' : ''}>
             <span class="fb-thumb">👍</span>
             <span class="fb-text">${voted ? '평가해주셔서 감사합니다' : '도움이 됐어요'}</span>
             <span class="fb-count">${helpful}</span>
+          </button>
+          <button class="fb-btn save-btn ${saved ? 'voted' : ''}" data-save-id="${articleId}">
+            <span class="fb-thumb">🔖</span>
+            <span class="fb-text">${saved ? '저장됨' : '저장'}</span>
           </button>
         </div>
       </div></td></tr>`;
@@ -1437,6 +1749,20 @@ function render() {
     });
   });
 
+  area.querySelectorAll('[data-save-id]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSaved(btn.dataset.saveId);
+    });
+  });
+
+  area.querySelectorAll('.related-item[data-goto-title]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      goToArticle(btn.dataset.gotoTitle);
+    });
+  });
+
   document.querySelectorAll('thead th[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
       const col = th.dataset.sort;
@@ -1450,6 +1776,7 @@ function render() {
 
 async function init() {
   allRows = ARTICLES;
+  savedIds = loadSavedIds();
   populateFilterOptions(allRows);
   updateStats(allRows);
   document.getElementById('filters').style.display = 'flex';
@@ -1464,17 +1791,44 @@ document.getElementById('search-input').addEventListener('input', () => { expand
 document.getElementById('filter-category').addEventListener('change', () => { expandedIndex = null; renderCategoryNav(); render(); });
 document.getElementById('filter-importance').addEventListener('change', () => { expandedIndex = null; render(); });
 document.getElementById('filter-status').addEventListener('change', () => { expandedIndex = null; render(); });
+document.getElementById('filter-period').addEventListener('change', (e) => {
+  dateFilter.mode = e.target.value;
+  document.getElementById('date-range-inputs').style.display = dateFilter.mode === 'custom' ? 'inline-flex' : 'none';
+  expandedIndex = null;
+  render();
+});
+document.getElementById('filter-date-start').addEventListener('change', (e) => {
+  dateFilter.start = e.target.value;
+  expandedIndex = null;
+  render();
+});
+document.getElementById('filter-date-end').addEventListener('change', (e) => {
+  dateFilter.end = e.target.value;
+  expandedIndex = null;
+  render();
+});
+document.getElementById('sort-select').addEventListener('change', (e) => {
+  const map = { latest: 'date', views: 'views', helpful: 'helpful', importance: 'importance' };
+  sortState.col = map[e.target.value] || 'date';
+  sortState.dir = 'desc';
+  expandedIndex = null;
+  render();
+});
 document.getElementById('mustread-toggle').addEventListener('click', (e) => {
   e.currentTarget.classList.toggle('active');
   expandedIndex = null;
   render();
 });
+document.getElementById('saved-toggle').addEventListener('click', (e) => {
+  savedOnly = !savedOnly;
+  e.currentTarget.classList.toggle('active', savedOnly);
+  expandedIndex = null;
+  render();
+});
 document.getElementById('refresh-btn').addEventListener('click', () => {
-  document.getElementById('search-input').value = '';
-  document.getElementById('filter-category').value = '';
-  document.getElementById('filter-importance').value = '';
-  document.getElementById('filter-status').value = '';
-  document.getElementById('mustread-toggle').classList.remove('active');
+  resetAllFilters();
+  document.getElementById('sort-select').value = 'latest';
+  sortState = { col: 'date', dir: 'desc' };
   expandedIndex = null;
   renderCategoryNav();
   render();
