@@ -102,6 +102,7 @@
   }
 
   .masthead-meta {
+    min-width: 0; /* 긴 인기 아티클 제목이 화면 밖으로 밀어내지 않도록 */
     text-align: right;
     font-family: var(--font-sans);
     font-size: 12px;
@@ -156,6 +157,7 @@
   }
   .wp-title {
     flex: 1;
+    min-width: 0;
     color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -169,8 +171,9 @@
   }
 
   @media (max-width: 640px) {
+    .masthead-meta { width: 100%; }
     .popular-panels { flex-direction: column; }
-    .weekly-popular { max-width: 100%; }
+    .weekly-popular { max-width: 100%; min-width: 0; flex-basis: auto; }
   }
 
   .wp-hint {
@@ -406,7 +409,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 900px;
+    min-width: 820px;
   }
 
   thead th {
@@ -437,13 +440,6 @@
     vertical-align: top;
   }
 
-  .col-date {
-    font-variant-numeric: tabular-nums;
-    font-size: 12px;
-    color: var(--text-meta);
-    white-space: nowrap;
-  }
-
   .stars {
     color: var(--red);
     letter-spacing: 1px;
@@ -463,7 +459,7 @@
   }
 
   .col-title {
-    max-width: 320px;
+    max-width: 360px;
   }
   .col-title .headline {
     font-weight: 600;
@@ -477,7 +473,7 @@
   }
 
   .col-summary {
-    max-width: 280px;
+    max-width: 320px;
     color: var(--text-summary);
     line-height: 1.6;
     font-size: 12.5px;
@@ -597,7 +593,18 @@
     background: var(--teal-soft);
     border-color: var(--teal);
     color: var(--teal);
-    cursor: default;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .fb-btn.voted:hover {
+    background: var(--red-soft);
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .fb-btn.voted:hover .fb-count { color: var(--red); border-left-color: var(--red); }
+  @media (hover: hover) {
+    .fb-btn.voted:hover .fb-text { font-size: 0; }
+    .fb-btn.voted:hover .fb-text::after { content: '추천 취소'; font-size: 12px; }
   }
   .fb-thumb { font-size: 13px; line-height: 1; }
   .fb-count {
@@ -680,6 +687,15 @@
 
   .empty-hint { margin-top: 4px; font-size: 12.5px; }
 
+  @media (max-width: 900px) {
+    /* 태블릿: 표를 화면 폭에 맞춰 가로 스크롤 없이 표시 */
+    table { min-width: 0; }
+    .col-title, .col-summary { max-width: none; }
+    .col-source { white-space: normal; }
+    /* 카테고리는 위쪽 카테고리 메뉴로 확인할 수 있어, 좁은 화면에서는 열을 숨기고 제목·요약에 폭을 양보 */
+    thead th:nth-child(2), tbody td:nth-child(2) { display: none; }
+  }
+
   @media (max-width: 640px) {
     .wrap { padding: 20px 14px 60px; }
     .masthead h1 { font-size: 28px; }
@@ -695,15 +711,15 @@
 
     .category-menu { gap: 16px; padding-right: 16px; }
 
-    /* 표: 우선순위가 낮은 '카테고리'/'출처' 열을 숨겨 가로 스크롤 폭을 줄임 */
-    table { min-width: 640px; }
-    thead th:nth-child(3), tbody td:nth-child(3),
-    thead th:nth-child(4), tbody td:nth-child(4) {
+    /* 표: 우선순위가 낮은 '카테고리'/'출처' 열을 숨겨 가로 스크롤 폭을 줄임 (등록일 열이 빠져 인덱스가 한 칸씩 당겨짐) */
+    table { min-width: 0; }
+    thead th:nth-child(2), tbody td:nth-child(2),
+    thead th:nth-child(3), tbody td:nth-child(3) {
       display: none;
     }
 
-    .col-title { max-width: 220px; }
-    .col-summary { max-width: 200px; }
+    .col-title { max-width: 240px; }
+    .col-summary { max-width: 220px; }
 
     .detail-panel {
       grid-template-columns: 1fr;
@@ -714,12 +730,17 @@
 
   @media (max-width: 420px) {
     /* 더 좁은 화면에서는 조회수 열도 숨기고 핵심 정보만 남김 */
-    table { min-width: 460px; }
-    thead th:nth-child(7), tbody td:nth-child(7) {
+    table { min-width: 0; } /* 4개 열만 남으므로 화면 폭에 맞춤 (가로 스크롤 없음) */
+    thead th:nth-child(6), tbody td:nth-child(6) {
       display: none;
     }
-    .col-title { max-width: 160px; }
-    .col-summary { max-width: 150px; }
+    .col-title { max-width: none; }
+    .col-summary { max-width: none; }
+  }
+
+  @media (max-width: 360px) {
+    tbody td, thead th { padding-left: 6px; padding-right: 6px; }
+    .status-badge { padding: 4px 7px; }
   }
 </style>
 </head>
@@ -800,7 +821,7 @@
 </div>
 
 <script>
-const LAST_SYNCED = '2026-09-28 오전 10:31';
+const LAST_SYNCED = '2026-09-28 오후 2:20';
 
 const ARTICLES = [
   {
@@ -1318,7 +1339,7 @@ function renderCategoryNav() {
       const cat = btn.dataset.cat;
       const sel = document.getElementById('filter-category');
       sel.value = cat;
-      expandedIndex = null;
+      expandedId = null;
       renderCategoryNav();
       render();
     });
@@ -1327,7 +1348,7 @@ function renderCategoryNav() {
 
 let allRows = [];
 let sortState = { col: 'date', dir: 'desc' };
-let expandedIndex = null;
+let expandedId = null;
 let viewCounts = {};
 let helpfulCounts = {};
 let savedIds = new Set();
@@ -1360,6 +1381,10 @@ function toggleSaved(articleId) {
 const COUNTAPI_BASE = 'https://countapi.mileshilliard.com/api/v1';
 const COUNTAPI_PREFIX = 'echomkt-knowledgehub-';
 const HELPFUL_PREFIX = 'echomkt-khhelpful-';
+// 이 CountAPI는 감소(-1)를 지원하지 않고, set(덮어쓰기)은 동시 클릭 시 다른 사람의 추천을 지울 수 있다.
+// 그래서 '추천'과 '취소'를 각각 증가 전용 카운터(hit)로 기록하고, 화면에는 (추천 - 취소)를 보여준다.
+const HELPFUL_CANCEL_PREFIX = 'echomkt-khhelpful-cancel-';
+let helpfulRaw = {}; // { [articleId]: { plus, minus } }
 
 function hashId(str) {
   let h = 0;
@@ -1378,6 +1403,12 @@ function hasVoted(articleId) {
 function markVoted(articleId) {
   try {
     localStorage.setItem('kh_voted_' + articleId, '1');
+  } catch (e) { /* 저장 불가 환경이면 무시 */ }
+}
+
+function unmarkVoted(articleId) {
+  try {
+    localStorage.removeItem('kh_voted_' + articleId);
   } catch (e) { /* 저장 불가 환경이면 무시 */ }
 }
 
@@ -1403,9 +1434,34 @@ async function loadViewCounts() {
 async function loadHelpfulCounts() {
   const results = await Promise.all(ARTICLES.map(async (r) => {
     const id = hashId(r.title);
-    return [id, await countapiGet(HELPFUL_PREFIX, id)];
+    const [plus, minus] = await Promise.all([
+      countapiGet(HELPFUL_PREFIX, id),
+      countapiGet(HELPFUL_CANCEL_PREFIX, id),
+    ]);
+    return [id, { plus, minus }];
   }));
-  helpfulCounts = Object.fromEntries(results);
+  helpfulRaw = Object.fromEntries(results);
+  helpfulCounts = {};
+  Object.keys(helpfulRaw).forEach(id => { helpfulCounts[id] = netHelpful(id); });
+}
+
+// 순 추천 수 = 추천 - 취소 (0 미만으로 내려가지 않음)
+function netHelpful(articleId) {
+  const raw = helpfulRaw[articleId] || { plus: 0, minus: 0 };
+  return Math.max(0, raw.plus - raw.minus);
+}
+
+// hit 요청: 성공하면 서버의 최신 값을, 실패하면 null을 돌려준다
+async function countapiHit(prefix, id) {
+  try {
+    const res = await fetch(`${COUNTAPI_BASE}/hit/${prefix}${id}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const v = parseInt(data.value, 10);
+    return isNaN(v) ? null : v;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function recordView(articleId) {
@@ -1421,21 +1477,61 @@ async function recordView(articleId) {
   render();
 }
 
+const helpfulPending = new Set();
+
 async function recordHelpful(articleId) {
-  if (hasVoted(articleId)) return;
-  markVoted(articleId);
-  helpfulCounts[articleId] = (helpfulCounts[articleId] || 0) + 1;
-  render();
+  // 서버 응답 전 연타하면 증가/감소가 꼬일 수 있어, 처리 중에는 추가 클릭을 무시
+  if (helpfulPending.has(articleId)) return;
+  helpfulPending.add(articleId);
   try {
-    const res = await fetch(`${COUNTAPI_BASE}/hit/${HELPFUL_PREFIX}${articleId}`);
-    if (res.ok) {
-      const data = await res.json();
-      helpfulCounts[articleId] = parseInt(data.value, 10) || helpfulCounts[articleId];
-      render();
-    }
-  } catch (e) {
-    console.error('평가 기록 실패', e);
+    await toggleHelpful(articleId);
+  } finally {
+    helpfulPending.delete(articleId);
   }
+}
+
+async function toggleHelpful(articleId) {
+  const raw = helpfulRaw[articleId] || (helpfulRaw[articleId] = { plus: 0, minus: 0 });
+  const cancelling = hasVoted(articleId);
+  const field = cancelling ? 'minus' : 'plus';
+  const prefix = cancelling ? HELPFUL_CANCEL_PREFIX : HELPFUL_PREFIX;
+
+  // 1) 화면 먼저 반영 (버튼 상태·숫자·상단 순위·추천순 정렬)
+  if (cancelling) unmarkVoted(articleId); else markVoted(articleId);
+  raw[field] += 1;
+  helpfulCounts[articleId] = netHelpful(articleId);
+  render();
+
+  // 2) 서버에 기록 (증가 전용이라 동시에 눌러도 값이 유실되지 않음)
+  const serverValue = await countapiHit(prefix, articleId);
+  if (serverValue === null) {
+    // 저장 실패 → 화면과 내 기록을 원래대로 되돌림 (숫자만 바뀐 채로 두지 않음)
+    raw[field] -= 1;
+    if (cancelling) markVoted(articleId); else unmarkVoted(articleId);
+    helpfulCounts[articleId] = netHelpful(articleId);
+    render();
+    showToast('저장에 실패했어요. 잠시 후 다시 눌러주세요.');
+    return;
+  }
+  // 서버의 최신 값으로 맞춤 (그사이 다른 사람이 누른 것도 반영)
+  raw[field] = serverValue;
+  helpfulCounts[articleId] = netHelpful(articleId);
+  render();
+}
+
+function showToast(msg) {
+  let el = document.getElementById('kh-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'kh-toast';
+    el.setAttribute('role', 'status');
+    el.style.cssText = 'position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#182033;color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;z-index:1000;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:opacity .2s;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 2600);
 }
 
 function populateFilterOptions(rows) {
@@ -1447,6 +1543,15 @@ function populateFilterOptions(rows) {
 
   catSel.innerHTML = '<option value="">전체 카테고리</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
   impSel.innerHTML = '<option value="">전체 중요도</option>' + imps.map(i => `<option value="${escapeHtml(i)}">${escapeHtml(i)} (${i.length})</option>`).join('');
+
+  // 상태 목록은 시트에 실제로 입력된 값으로 만든다 (자주 쓰는 순서를 앞에 배치)
+  const statSel = document.getElementById('filter-status');
+  const STATUS_ORDER = ['Must Read', '읽어볼 만함', '추천', '참고', '아카이브'];
+  const stats = [...new Set(rows.map(r => r.status).filter(Boolean))].sort((a, b) => {
+    const ai = STATUS_ORDER.indexOf(a), bi = STATUS_ORDER.indexOf(b);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) || a.localeCompare(b);
+  });
+  statSel.innerHTML = '<option value="">전체 상태</option>' + stats.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
 }
 
 function updateStats(rows) {
@@ -1502,21 +1607,31 @@ function getFiltered() {
   return rows;
 }
 
+// 'YYYY-MM-DD'(또는 YYYY.MM.DD / YYYY/MM/DD)를 브라우저 현지 자정 기준 날짜로 변환
+function parseLocalDate(str) {
+  const m = String(str || '').trim().match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return new Date(str);
+}
+
 function inDateRange(dateStr) {
   if (dateFilter.mode === 'all') return true;
   if (!dateStr) return false;
-  const d = new Date(dateStr);
+  const d = parseLocalDate(dateStr);
   if (isNaN(d.getTime())) return true;
   if (dateFilter.mode === '7d' || dateFilter.mode === '30d') {
-    const days = dateFilter.mode === '7d' ? 7 : 30;
-    const cutoff = new Date();
-    cutoff.setHours(0, 0, 0, 0);
-    cutoff.setDate(cutoff.getDate() - days);
-    return d >= cutoff;
+    // '오늘 포함' 최근 N일 → 오늘로부터 (N-1)일 전까지 포함
+    const offsetDays = dateFilter.mode === '7d' ? 6 : 29;
+    // 사용자 기기의 현재 날짜 기준: 시작일(오늘-N+1일) 00:00 ~ 오늘 자정 전까지
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(today);
+    start.setDate(start.getDate() - offsetDays);
+    return d >= start && d <= today;
   }
   if (dateFilter.mode === 'custom') {
-    if (dateFilter.start && d < new Date(dateFilter.start)) return false;
-    if (dateFilter.end && d > new Date(dateFilter.end)) return false;
+    if (dateFilter.start && d < parseLocalDate(dateFilter.start)) return false;
+    if (dateFilter.end && d > parseLocalDate(dateFilter.end)) return false;
     return true;
   }
   return true;
@@ -1569,7 +1684,7 @@ function goToArticle(title) {
   const rows = getFiltered();
   const idx = rows.findIndex(r => hashId(r.title) === articleId);
   if (idx === -1) return;
-  expandedIndex = idx;
+  expandedId = articleId;
   flashRowId = articleId;
   render();
   recordView(articleId);
@@ -1583,7 +1698,7 @@ function goToArticle(title) {
 function statusClass(status) {
   if (status.includes('Must')) return 'status-must';
   if (status.includes('아카이브')) return 'status-archive';
-  if (status.includes('읽어')) return 'status-worth';
+  if (status.includes('읽어') || status.includes('추천')) return 'status-worth';
   return 'status-default';
 }
 
@@ -1686,7 +1801,7 @@ function clearChip(key) {
     document.getElementById('filter-date-end').value = '';
     document.getElementById('date-range-inputs').style.display = 'none';
   }
-  expandedIndex = null;
+  expandedId = null;
   renderCategoryNav();
   render();
 }
@@ -1724,7 +1839,6 @@ function render() {
 
   let html = `<div class="table-scroll"><table>
     <thead><tr>
-      <th data-sort="date">등록일 ${arrow('date')}</th>
       <th data-sort="importance">중요도 ${arrow('importance')}</th>
       <th data-sort="category">카테고리 ${arrow('category')}</th>
       <th data-sort="source">출처</th>
@@ -1735,13 +1849,12 @@ function render() {
     </tr></thead><tbody>`;
 
   rows.forEach((r, i) => {
-    const isOpen = expandedIndex === i;
     const articleId = hashId(r.title);
+    const isOpen = expandedId === articleId;
     const views = viewCounts[articleId] || 0;
     const isHot = views >= 3;
     const flashClass = articleId === flashRowId ? 'flash-highlight' : '';
     html += `<tr class="row ${isOpen ? 'expanded' : ''} ${r.status.includes('아카이브') ? 'is-archived' : ''} ${flashClass}" data-idx="${i}" data-article-id="${articleId}">
-      <td class="col-date">${escapeHtml(r.date)}</td>
       <td><span class="stars">${escapeHtml(r.importance)}</span></td>
       <td><span class="tag">${escapeHtml(r.category)}</span></td>
       <td class="col-source">${escapeHtml(r.source)}<span class="col-region">${escapeHtml(r.region)}</span></td>
@@ -1756,7 +1869,7 @@ function render() {
       const voted = hasVoted(articleId);
       const saved = savedIds.has(articleId);
       const related = findRelated(r, allRows);
-      html += `<tr class="detail-row"><td colspan="8"><div class="detail-panel">
+      html += `<tr class="detail-row"><td colspan="7"><div class="detail-panel">
         <div class="detail-block"><div class="h">WHY IT MATTERS / 에코 시사점</div><div class="v">${escapeHtml(r.why) || '—'}</div></div>
         <div class="detail-block"><div class="h">추천 대상 · 열람 구분</div><div class="v">${escapeHtml(r.audience) || '—'} · ${escapeHtml(r.access) || '—'}</div></div>
         <div class="detail-block detail-full">
@@ -1774,9 +1887,9 @@ function render() {
         </div>` : ''}
         <div class="detail-block detail-full feedback-bar">
           <span class="fb-q">이 아티클, 도움이 되셨나요?</span>
-          <button class="fb-btn ${voted ? 'voted' : ''}" data-helpful-id="${articleId}" ${voted ? 'disabled' : ''}>
+          <button class="fb-btn ${voted ? 'voted' : ''}" data-helpful-id="${articleId}" aria-pressed="${voted ? 'true' : 'false'}" title="${voted ? '다시 누르면 추천이 취소돼요' : '이 아티클을 추천해요'}">
             <span class="fb-thumb">👍</span>
-            <span class="fb-text">${voted ? '평가해주셔서 감사합니다' : '도움이 됐어요'}</span>
+            <span class="fb-text">${voted ? '추천했어요 ✓' : '도움이 됐어요'}</span>
             <span class="fb-count">${helpful}</span>
           </button>
           <button class="fb-btn save-btn ${saved ? 'voted' : ''}" data-save-id="${articleId}">
@@ -1793,10 +1906,10 @@ function render() {
 
   area.querySelectorAll('tr.row').forEach(tr => {
     tr.addEventListener('click', () => {
-      const idx = Number(tr.dataset.idx);
+      // 펼침 상태는 '몇 번째 줄'이 아니라 '어떤 아티클'로 기억 → 조회·추천으로 순서가 바뀌어도 유지
       const articleId = tr.dataset.articleId;
-      const opening = expandedIndex !== idx;
-      expandedIndex = opening ? idx : null;
+      const opening = expandedId !== articleId;
+      expandedId = opening ? articleId : null;
       render();
       if (opening && articleId) recordView(articleId);
     });
@@ -1828,7 +1941,7 @@ function render() {
       const col = th.dataset.sort;
       if (sortState.col === col) sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
       else { sortState.col = col; sortState.dir = 'desc'; }
-      expandedIndex = null;
+      expandedId = null;
       render();
     });
   });
@@ -1841,55 +1954,55 @@ async function init() {
   updateStats(allRows);
   document.getElementById('filters').style.display = 'flex';
   document.getElementById('last-updated').textContent = LAST_SYNCED + ' 동기화';
-  expandedIndex = null;
+  expandedId = null;
   await Promise.all([loadViewCounts(), loadHelpfulCounts()]);
   renderCategoryNav();
   render();
 }
 
-document.getElementById('search-input').addEventListener('input', () => { expandedIndex = null; render(); });
-document.getElementById('filter-category').addEventListener('change', () => { expandedIndex = null; renderCategoryNav(); render(); });
-document.getElementById('filter-importance').addEventListener('change', () => { expandedIndex = null; render(); });
-document.getElementById('filter-status').addEventListener('change', () => { expandedIndex = null; render(); });
+document.getElementById('search-input').addEventListener('input', () => { expandedId = null; render(); });
+document.getElementById('filter-category').addEventListener('change', () => { expandedId = null; renderCategoryNav(); render(); });
+document.getElementById('filter-importance').addEventListener('change', () => { expandedId = null; render(); });
+document.getElementById('filter-status').addEventListener('change', () => { expandedId = null; render(); });
 document.getElementById('filter-period').addEventListener('change', (e) => {
   dateFilter.mode = e.target.value;
   document.getElementById('date-range-inputs').style.display = dateFilter.mode === 'custom' ? 'inline-flex' : 'none';
-  expandedIndex = null;
+  expandedId = null;
   render();
 });
 document.getElementById('filter-date-start').addEventListener('change', (e) => {
   dateFilter.start = e.target.value;
-  expandedIndex = null;
+  expandedId = null;
   render();
 });
 document.getElementById('filter-date-end').addEventListener('change', (e) => {
   dateFilter.end = e.target.value;
-  expandedIndex = null;
+  expandedId = null;
   render();
 });
 document.getElementById('sort-select').addEventListener('change', (e) => {
   const map = { latest: 'date', views: 'views', helpful: 'helpful', importance: 'importance' };
   sortState.col = map[e.target.value] || 'date';
   sortState.dir = 'desc';
-  expandedIndex = null;
+  expandedId = null;
   render();
 });
 document.getElementById('mustread-toggle').addEventListener('click', (e) => {
   e.currentTarget.classList.toggle('active');
-  expandedIndex = null;
+  expandedId = null;
   render();
 });
 document.getElementById('saved-toggle').addEventListener('click', (e) => {
   savedOnly = !savedOnly;
   e.currentTarget.classList.toggle('active', savedOnly);
-  expandedIndex = null;
+  expandedId = null;
   render();
 });
 document.getElementById('refresh-btn').addEventListener('click', () => {
   resetAllFilters();
   document.getElementById('sort-select').value = 'latest';
   sortState = { col: 'date', dir: 'desc' };
-  expandedIndex = null;
+  expandedId = null;
   renderCategoryNav();
   render();
 });
