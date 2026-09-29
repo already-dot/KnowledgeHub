@@ -68,6 +68,42 @@
     padding: 36px 28px 80px;
   }
 
+  /* ---------- Footer (의견 남기기) ---------- */
+  .site-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .footer-text {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .feedback-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 4px;
+    background: var(--ink);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.12s ease;
+  }
+  .feedback-link:hover { background: var(--navy); }
+  .feedback-link:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  @media (max-width: 640px) {
+    .site-footer { flex-direction: column; align-items: stretch; text-align: center; }
+    .feedback-link { justify-content: center; }
+  }
+
   /* ---------- Masthead ---------- */
   .masthead {
     display: flex;
@@ -818,10 +854,17 @@
 
   <div id="content-area"></div>
 
+  <footer class="site-footer">
+    <p class="footer-text">추천하고 싶은 아티클이나 허브에 대한 의견이 있으신가요?</p>
+    <a class="feedback-link" href="https://forms.gle/Xh3M767Zp8hqFMTT9" target="_blank" rel="noopener noreferrer">
+      의견 남기러 가기 <span aria-hidden="true">↗</span>
+    </a>
+  </footer>
+
 </div>
 
 <script>
-const LAST_SYNCED = '2026-09-29 오후 12:07';
+const LAST_SYNCED = '2026-09-29 오후 12:30';
 
 const ARTICLES = [
   {
